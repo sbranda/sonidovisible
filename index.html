@@ -1,120 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SonidoVisible</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.5.4/dist/speech-commands.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    min-height: 100vh;
-    background: #0D0D14;
-    color: #F9FAFB;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .container { width: 100%; max-width: 480px; padding: 0 16px; }
-
-  /* Header */
-  .header { padding: 32px 24px 0; display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-  .logo {
-    width: 36px; height: 36px; border-radius: 10px;
-    background: linear-gradient(135deg, #7C3AED, #10B981);
-    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
-  }
-  .app-name { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
-  .app-sub { color: #6B7280; font-size: 12px; }
-
-  /* Cards */
-  .card {
-    background: #13131F; border-radius: 20px;
-    border: 1.5px solid #1F2937; margin-bottom: 16px;
-    transition: border-color 0.4s;
-  }
-
-  /* Main status */
-  .status-card { padding: 28px 16px 20px; text-align: center; }
-  .big-emoji { font-size: 56px; margin-bottom: 8px; line-height: 1; }
-  .status-label {
-    font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
-    margin-bottom: 4px; transition: color 0.3s; color: #4B5563;
-  }
-  .status-sub { color: #6B7280; font-size: 13px; margin-bottom: 20px; }
-
-  /* Wave */
-  .wave-wrap {
-    display: flex; align-items: center; justify-content: center;
-    gap: 3px; height: 80px; padding: 0 16px;
-  }
-  .bar {
-    width: 4px; background: #374151; border-radius: 99px;
-    transition: height 0.08s ease, background 0.3s ease;
-    min-height: 4px;
-  }
-
-  /* dB meter */
-  .db-meter { padding: 0 24px; margin-top: 12px; }
-  .db-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
-  .db-label { color: #9CA3AF; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
-  .db-value { font-weight: 700; font-size: 14px; color: #10B981; }
-  .db-track { background: #1F2937; border-radius: 99px; height: 10px; overflow: hidden; }
-  .db-fill {
-    height: 100%; width: 0%; border-radius: 99px;
-    background: linear-gradient(90deg, #7C3AED, #10B981);
-    transition: width 0.1s ease, background 0.3s ease;
-  }
-
-  /* Button */
-  .btn {
-    margin-top: 20px; padding: 14px 40px; border-radius: 99px;
-    border: none; cursor: pointer; font-weight: 700; font-size: 15px;
-    letter-spacing: 0.02em; background: linear-gradient(135deg, #7C3AED, #10B981);
-    color: #fff; transition: all 0.2s;
-  }
-  .btn.stop { background: #1F2937; color: #EF4444; }
-  .btn:active { transform: scale(0.97); }
-
-  .error-msg {
-    margin-top: 12px; color: #EF4444; font-size: 13px;
-    background: #EF444415; border-radius: 8px; padding: 8px 12px;
-  }
-
-  /* Scale */
-  .scale-card { padding: 16px; }
-  .section-title {
-    color: #9CA3AF; font-size: 11px; text-transform: uppercase;
-    letter-spacing: 0.1em; margin-bottom: 12px;
-  }
-  .scale-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px 10px; border-radius: 8px;
-    border: 1px solid transparent; transition: all 0.3s;
-    margin-bottom: 4px;
-  }
-  .scale-emoji { font-size: 18px; width: 28px; text-align: center; }
-  .scale-name { flex: 1; font-size: 13px; color: #D1D5DB; transition: color 0.3s; }
-  .scale-db { font-size: 11px; color: #6B7280; }
-
-  /* Events */
-  .events-card { padding: 16px; }
-  .event-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px; background: #1A1A2E; border-radius: 12px;
-    border: 1px solid transparent; margin-bottom: 8px;
-    transition: opacity 0.5s;
-  }
-  .event-emoji { font-size: 24px; }
-  .event-info { flex: 1; }
-  .event-name { font-weight: 600; font-size: 14px; }
-  .event-time { color: #6B7280; font-size: 11px; }
-  .event-badge {
-    border-radius: 99px; padding: 2px 10px;
-    font-size: 12px; font-weight: 700;
-  }
-
-  .spacer { height: 32px; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#0D0D14;color:#F9FAFB;font-family:'Inter','Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center}
+.container{width:100%;max-width:480px;padding:0 16px}
+.header{padding:28px 24px 0;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7C3AED,#10B981);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.app-name{font-weight:800;font-size:20px;letter-spacing:-.02em}
+.app-sub{color:#6B7280;font-size:12px}
+.card{background:#13131F;border-radius:20px;border:1.5px solid #1F2937;margin-bottom:14px;transition:border-color .4s}
+.status-card{padding:24px 16px 20px;text-align:center}
+.big-emoji{font-size:60px;margin-bottom:8px;line-height:1;transition:all .3s}
+.status-label{font-size:24px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;transition:color .3s;color:#4B5563}
+.status-sub{color:#6B7280;font-size:13px;margin-bottom:4px}
+.yamnet-label{font-size:12px;color:#9CA3AF;min-height:18px;margin-bottom:16px;transition:all .3s}
+.wave-wrap{display:flex;align-items:center;justify-content:center;gap:3px;height:72px;padding:0 12px}
+.bar{width:4px;background:#374151;border-radius:99px;transition:height .08s ease,background .3s ease;min-height:4px}
+.db-meter{padding:0 20px;margin-top:12px}
+.db-row{display:flex;justify-content:space-between;margin-bottom:5px}
+.db-label{color:#9CA3AF;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.db-value{font-weight:700;font-size:13px}
+.db-track{background:#1F2937;border-radius:99px;height:8px;overflow:hidden}
+.db-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#7C3AED,#10B981);transition:width .1s ease}
+.btn{margin-top:18px;padding:13px 36px;border-radius:99px;border:none;cursor:pointer;font-weight:700;font-size:14px;letter-spacing:.02em;background:linear-gradient(135deg,#7C3AED,#10B981);color:#fff;transition:all .2s}
+.btn.stop{background:#1F2937;color:#EF4444}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.error-msg{margin-top:10px;color:#EF4444;font-size:13px;background:#EF444415;border-radius:8px;padding:8px 12px}
+.loading-bar{margin-top:14px;background:#1F2937;border-radius:99px;height:4px;overflow:hidden;display:none}
+.loading-fill{height:100%;background:linear-gradient(90deg,#7C3AED,#10B981);border-radius:99px;animation:loadpulse 1.2s ease-in-out infinite}
+@keyframes loadpulse{0%{width:0%}50%{width:70%}100%{width:100%}}
+.section-title{color:#9CA3AF;font-size:11px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.detections-card{padding:16px}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.det-item{background:#1A1A2E;border-radius:12px;padding:12px 10px;text-align:center;border:1px solid transparent;transition:all .3s}
+.det-item.active{border-color:var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.det-emoji{font-size:28px;margin-bottom:4px}
+.det-name{font-size:12px;font-weight:600;color:#D1D5DB;line-height:1.2}
+.det-conf{font-size:10px;color:#6B7280;margin-top:2px}
+.det-bar-wrap{background:#1F2937;border-radius:99px;height:3px;margin-top:6px;overflow:hidden}
+.det-bar{height:100%;border-radius:99px;transition:width .3s ease}
+.events-card{padding:16px}
+.event-row{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#1A1A2E;border-radius:12px;border:1px solid transparent;margin-bottom:7px;transition:opacity .5s}
+.event-emoji{font-size:22px}
+.event-info{flex:1}
+.event-name{font-weight:600;font-size:13px}
+.event-time{color:#6B7280;font-size:11px}
+.event-badge{border-radius:99px;padding:2px 9px;font-size:11px;font-weight:700}
+.spacer{height:32px}
+.model-badge{display:inline-flex;align-items:center;gap:5px;background:#7C3AED22;color:#8B5CF6;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -123,7 +63,7 @@
   <div class="logo">👁️</div>
   <div>
     <div class="app-name">SonidoVisible</div>
-    <div class="app-sub">Entorno sonoro en tiempo real</div>
+    <div class="app-sub">Identificación de sonidos en tiempo real</div>
   </div>
 </div>
 
@@ -132,8 +72,9 @@
   <!-- Status card -->
   <div class="card status-card" id="statusCard">
     <div class="big-emoji" id="bigEmoji">🎙️</div>
-    <div class="status-label" id="statusLabel">Micrófono apagado</div>
-    <div class="status-sub" id="statusSub">Tocá el botón para comenzar</div>
+    <div class="status-label" id="statusLabel">Listo para escuchar</div>
+    <div class="status-sub" id="statusSub">Activá el micrófono para comenzar</div>
+    <div class="yamnet-label" id="yamnetLabel"></div>
 
     <div class="wave-wrap" id="waveWrap"></div>
 
@@ -145,15 +86,15 @@
       <div class="db-track"><div class="db-fill" id="dbFill"></div></div>
     </div>
 
-    <br>
+    <div class="loading-bar" id="loadingBar"><div class="loading-fill"></div></div>
     <button class="btn" id="mainBtn" onclick="toggleMic()">▶ Activar micrófono</button>
     <div class="error-msg" id="errorMsg" style="display:none"></div>
   </div>
 
-  <!-- Scale reference -->
-  <div class="card scale-card">
-    <div class="section-title">Guía de niveles</div>
-    <div id="scaleList"></div>
+  <!-- Live detections grid -->
+  <div class="card detections-card" id="detectionsCard" style="display:none">
+    <div class="section-title">Detecciones en vivo <span class="model-badge">🤖 IA</span></div>
+    <div class="det-grid" id="detGrid"></div>
   </div>
 
   <!-- Events log -->
@@ -166,206 +107,287 @@
 </div>
 
 <script>
-const CATEGORIES = [
-  { id:"silence", label:"Silencio",       emoji:"🤫", color:"#6B7280", minDb:0,   maxDb:25  },
-  { id:"whisper", label:"Murmullo",       emoji:"💬", color:"#8B5CF6", minDb:25,  maxDb:45  },
-  { id:"talk",    label:"Conversación",   emoji:"🗣️", color:"#3B82F6", minDb:45,  maxDb:60  },
-  { id:"music",   label:"Música / TV",    emoji:"🎵", color:"#10B981", minDb:60,  maxDb:70  },
-  { id:"loud",    label:"Ruido fuerte",   emoji:"📣", color:"#F59E0B", minDb:70,  maxDb:80  },
-  { id:"alarm",   label:"¡Alarma!",       emoji:"🚨", color:"#EF4444", minDb:80,  maxDb:Infinity },
+// ─── Sound categories mapped from YAMNet/SpeechCommands labels ───
+const SOUND_MAP = [
+  { id:"dog",       label:"Perro",          emoji:"🐕", color:"#F59E0B",
+    keywords:["dog","bark","woof"] },
+  { id:"speech",    label:"Voz humana",     emoji:"🗣️", color:"#3B82F6",
+    keywords:["speech","talking","conversation","yes","no","up","down","left","right","go","stop","on","off","unknown"] },
+  { id:"music",     label:"Música",         emoji:"🎵", color:"#10B981",
+    keywords:["music","singing","song","beat"] },
+  { id:"alarm",     label:"Alarma / sirena",emoji:"🚨", color:"#EF4444",
+    keywords:["alarm","siren","emergency","fire"] },
+  { id:"knock",     label:"Golpe / puerta", emoji:"🚪", color:"#8B5CF6",
+    keywords:["knock","door","bang","tap"] },
+  { id:"baby",      label:"Bebé llorando",  emoji:"👶", color:"#EC4899",
+    keywords:["baby","crying","cry","infant"] },
+  { id:"vehicle",   label:"Vehículo",       emoji:"🚗", color:"#6B7280",
+    keywords:["car","vehicle","engine","traffic","horn"] },
+  { id:"phone",     label:"Teléfono",       emoji:"📱", color:"#06B6D4",
+    keywords:["phone","ring","ringtone","telephone"] },
+  { id:"applause",  label:"Aplausos",       emoji:"👏", color:"#F97316",
+    keywords:["applause","clapping","crowd"] },
+  { id:"silence",   label:"Silencio",       emoji:"🤫", color:"#374151",
+    keywords:["silence","quiet","background"] },
 ];
 
 const BAR_COUNT = 40;
 let active = false;
-let audioCtx, analyser, source, raf;
-let lastCatId = "silence";
-let lastEventTime = 0;
+let audioCtx, analyserNode, sourceNode, rafId;
+let recognizer = null;
+let modelReady = false;
 let events = [];
+let lastEventLabel = "";
+let lastEventTime = 0;
+let liveDetections = []; // top detections from last frame
 
 // Build wave bars
 const waveWrap = document.getElementById("waveWrap");
 const bars = [];
 for (let i = 0; i < BAR_COUNT; i++) {
   const b = document.createElement("div");
-  b.className = "bar";
-  b.style.height = "4px";
-  waveWrap.appendChild(b);
-  bars.push(b);
+  b.className = "bar"; b.style.height = "4px";
+  waveWrap.appendChild(b); bars.push(b);
 }
 
-// Build scale list
-const scaleList = document.getElementById("scaleList");
-CATEGORIES.forEach(c => {
-  const dbText = c.id === "silence" ? "< 25 dB" : c.id === "alarm" ? "> 80 dB" : `${c.minDb}–${c.maxDb} dB`;
-  const row = document.createElement("div");
-  row.className = "scale-row";
-  row.id = "scale-" + c.id;
-  row.innerHTML = `
-    <span class="scale-emoji">${c.emoji}</span>
-    <span class="scale-name" id="scaleName-${c.id}">${c.label}</span>
-    <span class="scale-db">${dbText}</span>
-  `;
-  scaleList.appendChild(row);
-});
-
-function getCategory(db) {
-  return CATEGORIES.find(c => db >= c.minDb && db < c.maxDb) || CATEGORIES[0];
+// Map a raw label string to our sound category
+function mapLabel(label) {
+  const l = label.toLowerCase();
+  for (const cat of SOUND_MAP) {
+    if (cat.keywords.some(k => l.includes(k))) return cat;
+  }
+  // fallback: speech if recognizable word
+  return SOUND_MAP.find(c => c.id === "speech");
 }
 
-function updateUI(db, cat) {
-  // Status card
-  document.getElementById("bigEmoji").textContent = cat.emoji;
-  const lbl = document.getElementById("statusLabel");
-  lbl.textContent = cat.label;
-  lbl.style.color = cat.color;
-  document.getElementById("statusSub").textContent = "Escuchando tu entorno...";
-  document.getElementById("statusCard").style.borderColor = cat.color + "55";
+// ─── Load Speech Commands model (has microphone built-in) ───
+async function loadModel() {
+  const loadingBar = document.getElementById("loadingBar");
+  const btn = document.getElementById("mainBtn");
+  loadingBar.style.display = "block";
+  btn.disabled = true;
+  btn.textContent = "⏳ Cargando modelo IA...";
+  try {
+    recognizer = speechCommands.create("BROWSER_FFT");
+    await recognizer.ensureModelLoaded();
+    modelReady = true;
+    loadingBar.style.display = "none";
+    btn.disabled = false;
+    btn.textContent = "▶ Activar micrófono";
+    document.getElementById("statusSub").textContent = "Modelo IA listo · Activá el micrófono";
+  } catch(e) {
+    loadingBar.style.display = "none";
+    btn.disabled = false;
+    btn.textContent = "▶ Activar micrófono";
+    document.getElementById("statusSub").textContent = "Modo básico (sin IA)";
+  }
+}
 
-  // dB meter
+// ─── dB from analyser ───
+function getDb(dataArray) {
+  const rms = Math.sqrt(dataArray.reduce((s,v)=>s+v*v,0)/dataArray.length);
+  return rms > 0 ? Math.max(0, 20*Math.log10(rms/128)+60) : 0;
+}
+
+// ─── Update dB UI ───
+function updateDbUI(db, color) {
   document.getElementById("dbMeter").style.display = "block";
   document.getElementById("dbValue").textContent = db > 0 ? `${Math.round(db)} dB` : "—";
-  document.getElementById("dbValue").style.color = cat.color;
-  const pct = Math.min(100, Math.max(0, (db / 100) * 100));
+  document.getElementById("dbValue").style.color = color;
+  const pct = Math.min(100, (db/100)*100);
   const fill = document.getElementById("dbFill");
-  fill.style.width = pct + "%";
-  fill.style.background = `linear-gradient(90deg, #7C3AED, ${cat.color})`;
+  fill.style.width = pct+"%";
+  fill.style.background = `linear-gradient(90deg,#7C3AED,${color})`;
+}
 
-  // Scale highlight
-  CATEGORIES.forEach(c => {
-    const row = document.getElementById("scale-" + c.id);
-    const name = document.getElementById("scaleName-" + c.id);
-    if (c.id === cat.id) {
-      row.style.background = c.color + "15";
-      row.style.borderColor = c.color + "40";
-      name.style.color = c.color;
-    } else {
-      row.style.background = "transparent";
-      row.style.borderColor = "transparent";
-      name.style.color = "#D1D5DB";
+// ─── Render detection grid ───
+function renderDetGrid() {
+  const grid = document.getElementById("detGrid");
+  const card = document.getElementById("detectionsCard");
+  if (!liveDetections.length) { card.style.display="none"; return; }
+  card.style.display = "block";
+  grid.innerHTML = "";
+  liveDetections.forEach(d => {
+    const pct = Math.round(d.score * 100);
+    const div = document.createElement("div");
+    div.className = "det-item" + (d.active ? " active" : "");
+    div.style.setProperty("--c", d.cat.color);
+    div.innerHTML = `
+      <div class="det-emoji">${d.cat.emoji}</div>
+      <div class="det-name">${d.cat.label}</div>
+      <div class="det-conf" style="color:${d.active?d.cat.color:'#6B7280'}">${pct}%</div>
+      <div class="det-bar-wrap"><div class="det-bar" style="width:${pct}%;background:${d.cat.color}"></div></div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+// ─── Process recognizer results ───
+function handleRecognition(result) {
+  const labels = recognizer.wordLabels();
+  // Score per our category
+  const catScores = {};
+  result.scores.forEach((score, i) => {
+    const label = labels[i];
+    const cat = mapLabel(label);
+    if (!catScores[cat.id] || catScores[cat.id].score < score) {
+      catScores[cat.id] = { cat, score, label };
     }
   });
+
+  // Sort top 4
+  const sorted = Object.values(catScores)
+    .sort((a,b)=>b.score-a.score)
+    .slice(0,4);
+
+  const top = sorted[0];
+  liveDetections = sorted.map((d,i)=>({...d, active: i===0 && d.score > 0.3}));
+  renderDetGrid();
+
+  // Update main UI with top detection
+  if (top && top.score > 0.3 && top.cat.id !== "silence") {
+    const cat = top.cat;
+    document.getElementById("bigEmoji").textContent = cat.emoji;
+    const lbl = document.getElementById("statusLabel");
+    lbl.textContent = cat.label;
+    lbl.style.color = cat.color;
+    document.getElementById("statusCard").style.borderColor = cat.color+"55";
+    document.getElementById("yamnetLabel").textContent = `"${top.label}" · ${Math.round(top.score*100)}% confianza`;
+    document.getElementById("yamnetLabel").style.color = cat.color;
+    bars.forEach(b => b.style.background = cat.color);
+
+    // Log event
+    const now = Date.now();
+    if (cat.id !== lastEventLabel && now - lastEventTime > 2000) {
+      lastEventLabel = cat.id;
+      lastEventTime = now;
+      addEvent(cat, top.score);
+    }
+  } else {
+    document.getElementById("bigEmoji").textContent = "🤫";
+    document.getElementById("statusLabel").textContent = "Escuchando...";
+    document.getElementById("statusLabel").style.color = "#6B7280";
+    document.getElementById("yamnetLabel").textContent = "Sin sonido detectado";
+    document.getElementById("yamnetLabel").style.color = "#4B5563";
+    document.getElementById("statusCard").style.borderColor = "#1F2937";
+    bars.forEach(b => b.style.background = "#374151");
+  }
 }
 
-function resetUI() {
-  document.getElementById("bigEmoji").textContent = "🎙️";
-  const lbl = document.getElementById("statusLabel");
-  lbl.textContent = "Micrófono apagado";
-  lbl.style.color = "#4B5563";
-  document.getElementById("statusSub").textContent = "Tocá el botón para comenzar";
-  document.getElementById("statusCard").style.borderColor = "#1F2937";
-  document.getElementById("dbMeter").style.display = "none";
-  bars.forEach(b => { b.style.height = "4px"; b.style.background = "#374151"; });
-  CATEGORIES.forEach(c => {
-    document.getElementById("scale-" + c.id).style.background = "transparent";
-    document.getElementById("scale-" + c.id).style.borderColor = "transparent";
-    document.getElementById("scaleName-" + c.id).style.color = "#D1D5DB";
-  });
-}
-
-function addEvent(cat, db) {
-  const ev = { ...cat, time: Date.now(), db };
-  events.unshift(ev);
-  if (events.length > 12) events.pop();
+// ─── Events ───
+function addEvent(cat, score) {
+  events.unshift({ ...cat, time: Date.now(), score });
+  if (events.length > 15) events.pop();
   renderEvents();
 }
 
 function renderEvents() {
   const list = document.getElementById("eventsList");
   const card = document.getElementById("eventsCard");
-  if (events.length === 0) { card.style.display = "none"; return; }
+  if (!events.length) { card.style.display="none"; return; }
   card.style.display = "block";
   list.innerHTML = "";
   const now = Date.now();
   events.forEach(ev => {
     const age = now - ev.time;
-    const opacity = Math.max(0.15, 1 - age / 8000);
+    const opacity = Math.max(0.15, 1 - age/10000);
     const row = document.createElement("div");
     row.className = "event-row";
-    row.style.borderColor = ev.color + "33";
+    row.style.borderColor = ev.color+"33";
     row.style.opacity = opacity;
-    const t = new Date(ev.time).toLocaleTimeString("es-AR", { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+    const t = new Date(ev.time).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
     row.innerHTML = `
       <span class="event-emoji">${ev.emoji}</span>
       <div class="event-info">
         <div class="event-name" style="color:${ev.color}">${ev.label}</div>
         <div class="event-time">${t}</div>
       </div>
-      <span class="event-badge" style="background:${ev.color}22;color:${ev.color}">${Math.round(ev.db)} dB</span>
+      <span class="event-badge" style="background:${ev.color}22;color:${ev.color}">${Math.round(ev.score*100)}%</span>
     `;
     list.appendChild(row);
   });
 }
-
-// Refresh event opacity every 2s
 setInterval(renderEvents, 2000);
+
+// ─── Mic toggle ───
+async function toggleMic() {
+  active ? stopMic() : await startMic();
+}
 
 async function startMic() {
   document.getElementById("errorMsg").style.display = "none";
   try {
+    // Start raw audio for waveform + dB
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    source = audioCtx.createMediaStreamSource(stream);
-    source.connect(analyser);
+    analyserNode = audioCtx.createAnalyser();
+    analyserNode.fftSize = 256;
+    sourceNode = audioCtx.createMediaStreamSource(stream);
+    sourceNode.connect(analyserNode);
     active = true;
 
-    const btn = document.getElementById("mainBtn");
-    btn.textContent = "⏹ Detener";
-    btn.classList.add("stop");
+    document.getElementById("mainBtn").textContent = "⏹ Detener";
+    document.getElementById("mainBtn").classList.add("stop");
+    document.getElementById("statusSub").textContent = "Escuchando tu entorno...";
 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    const dataArray = new Uint8Array(analyserNode.frequencyBinCount);
 
-    function loop() {
-      analyser.getByteFrequencyData(dataArray);
-
-      const rms = Math.sqrt(dataArray.reduce((s, v) => s + v * v, 0) / dataArray.length);
-      const db = rms > 0 ? 20 * Math.log10(rms / 128) + 60 : 0;
-      const dbClamped = Math.max(0, db);
-      const cat = getCategory(dbClamped);
-
-      // Update bars
+    // Waveform loop
+    function waveLoop() {
+      analyserNode.getByteFrequencyData(dataArray);
+      const db = getDb(dataArray);
+      const currentColor = document.getElementById("statusLabel").style.color || "#10B981";
       for (let i = 0; i < BAR_COUNT; i++) {
-        const v = (dataArray[i] || 0) / 255 * 100;
-        bars[i].style.height = Math.max(4, v) + "px";
-        bars[i].style.background = cat.color;
+        const v = (dataArray[i]||0)/255*72;
+        bars[i].style.height = Math.max(4,v)+"px";
       }
-
-      updateUI(dbClamped, cat);
-
-      // Log event
-      const now = Date.now();
-      if (cat.id !== lastCatId && now - lastEventTime > 1500) {
-        lastCatId = cat.id;
-        lastEventTime = now;
-        if (cat.id !== "silence") addEvent(cat, dbClamped);
-      }
-
-      raf = requestAnimationFrame(loop);
+      updateDbUI(db, currentColor||"#10B981");
+      rafId = requestAnimationFrame(waveLoop);
     }
-    loop();
+    waveLoop();
+
+    // Start AI recognition if model ready
+    if (modelReady && recognizer) {
+      await recognizer.listen(handleRecognition, {
+        includeSpectrogram: false,
+        probabilityThreshold: 0.1,
+        overlapFactor: 0.5
+      });
+      document.getElementById("statusSub").textContent = "IA activa · Identificando sonidos...";
+    }
+
   } catch(e) {
     const err = document.getElementById("errorMsg");
     err.textContent = "No se pudo acceder al micrófono. Verificá los permisos del navegador.";
     err.style.display = "block";
+    active = false;
   }
 }
 
 function stopMic() {
-  cancelAnimationFrame(raf);
-  if (source) source.disconnect();
+  cancelAnimationFrame(rafId);
+  if (recognizer && recognizer.isListening()) recognizer.stopListening();
+  if (sourceNode) sourceNode.disconnect();
   if (audioCtx) audioCtx.close();
-  source = null; audioCtx = null; analyser = null;
+  sourceNode = null; audioCtx = null; analyserNode = null;
   active = false;
-  const btn = document.getElementById("mainBtn");
-  btn.textContent = "▶ Activar micrófono";
-  btn.classList.remove("stop");
-  resetUI();
+  liveDetections = [];
+
+  document.getElementById("mainBtn").textContent = "▶ Activar micrófono";
+  document.getElementById("mainBtn").classList.remove("stop");
+  document.getElementById("bigEmoji").textContent = "🎙️";
+  document.getElementById("statusLabel").textContent = "Micrófono apagado";
+  document.getElementById("statusLabel").style.color = "#4B5563";
+  document.getElementById("statusSub").textContent = "Activá el micrófono para comenzar";
+  document.getElementById("yamnetLabel").textContent = "";
+  document.getElementById("statusCard").style.borderColor = "#1F2937";
+  document.getElementById("dbMeter").style.display = "none";
+  document.getElementById("detectionsCard").style.display = "none";
+  bars.forEach(b=>{b.style.height="4px";b.style.background="#374151"});
 }
 
-function toggleMic() {
-  active ? stopMic() : startMic();
-}
+// Init: load model on page load
+loadModel();
 </script>
 </body>
 </html>
